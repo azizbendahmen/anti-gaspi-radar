@@ -19,7 +19,7 @@ export const Route = createFileRoute("/etudiant")({
   component: Student,
 });
 
-export function countdown(mins: number) {
+function countdown(mins: number) {
   const h = Math.floor(mins / 60), m = Math.floor(mins % 60);
   return h ? `${h} h ${String(m).padStart(2, "0")}` : `${m} min`;
 }
