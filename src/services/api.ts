@@ -21,6 +21,7 @@ export interface Lot {
   degreeHours: number; gasDropPct: number;
   reservedUntil?: number; reservedBy?: string; pickedUp?: boolean;
   angle: number;
+  priceOverride?: number;
 }
 export interface PricedLot extends Lot {
   score: number; minutesToClose: number; price: number; blocked: boolean;
@@ -46,7 +47,7 @@ function price(l: Lot): PricedLot {
   const score = freshnessScore(l.degreeHours, l.gasDropPct);
   const minutesToClose = Math.max(0, (l.closesAt - Date.now()) / min);
   const calc = dynamicPrice(l.basePrice, score, minutesToClose);
-  return { ...l, score, minutesToClose, price: calc.price, calc, blocked: l.degreeHours > DEGREE_HOURS_LIMIT };
+  return { ...l, score, minutesToClose, price: l.priceOverride ?? calc.price, calc, blocked: l.degreeHours > DEGREE_HOURS_LIMIT };
 }
 
 function releaseExpired() {
@@ -94,11 +95,65 @@ export function validatePickup(code: string): { ok: boolean; message: string } {
   return { ok: true, message: `Retrait validé : ${l.merchant} (${l.id})` };
 }
 
-export function createLot(input: { category: Category; weight_g: number; basePrice: number; contents: string }) {
+export function createLot(input: { category: Category; weight_g: number; basePrice: number; contents: string; degreeHours?: number; gasDropPct?: number; priceOverride?: number; closesAt?: number }) {
   const id = `L-${100 + lots.length + 1}`;
   lots = [...lots, { id, merchant: "Votre commerce", address: "Boîte FWR-01", closesAt: Date.now() + 150 * min, degreeHours: 0, gasDropPct: 0, angle: Math.random() * 360, ...input }];
   emit();
   return id;
+}
+
+/* ---------------- Measurement cycle (replaceable by real ESP32 events) ---------------- */
+export type CyclePhase = "STABILIZING" | "WEIGHING" | "PURGING" | "ACCUMULATING" | "ANALYZING";
+export const CYCLE_PHASES: CyclePhase[] = ["STABILIZING", "WEIGHING", "PURGING", "ACCUMULATING", "ANALYZING"];
+export type CycleDurations = Record<CyclePhase, number>; // seconds
+export const DEMO_DURATIONS: CycleDurations = { STABILIZING: 3, WEIGHING: 3, PURGING: 5, ACCUMULATING: 6, ANALYZING: 3 };
+export const REAL_DURATIONS: CycleDurations = { STABILIZING: 15, WEIGHING: 10, PURGING: 45, ACCUMULATING: 240, ANALYZING: 5 };
+
+export interface CycleResult { weight_g: number; temp: number; hum: number; maxTemp: number; degreeHours: number; gasDropPct: number; }
+export type CycleEvent =
+  | { type: "phase"; phase: CyclePhase; duration: number }
+  | { type: "tick"; phase: CyclePhase; remaining: number; total: number; totalRemaining: number }
+  | { type: "door_open" }
+  | { type: "offline" }
+  | { type: "done"; result: CycleResult };
+
+export function startMeasurementCycle(
+  opts: { durations: CycleDurations; estimatedWeight: number; category: Category; producedHoursAgo: number; simulateOffline?: boolean },
+  onEvent: (e: CycleEvent) => void,
+) {
+  let stopped = false;
+  const timers: ReturnType<typeof setTimeout>[] = [];
+  const total = CYCLE_PHASES.reduce((s, p) => s + opts.durations[p], 0);
+  if (opts.simulateOffline) { timers.push(setTimeout(() => !stopped && onEvent({ type: "offline" }), 1200)); return { cancel: () => { stopped = true; timers.forEach(clearTimeout); }, openDoor: () => {} }; }
+
+  let idx = 0, remaining = opts.durations[CYCLE_PHASES[0]], elapsed = 0;
+  onEvent({ type: "phase", phase: CYCLE_PHASES[0], duration: remaining });
+  const iv = setInterval(() => {
+    if (stopped) return;
+    remaining -= 0.25; elapsed += 0.25;
+    if (remaining <= 0) {
+      idx++;
+      if (idx >= CYCLE_PHASES.length) {
+        clearInterval(iv); stopped = true;
+        const perish = opts.category === "Plats cuisinés" ? 2.2 : opts.category === "Pâtisserie" ? 1.6 : 1;
+        const maxTemp = +(4 + Math.random() * 4).toFixed(1);
+        onEvent({ type: "done", result: {
+          weight_g: Math.round(opts.estimatedWeight * (0.88 + Math.random() * 0.26)),
+          temp: +(cur.temp).toFixed(1), hum: Math.round(cur.hum), maxTemp,
+          degreeHours: +(opts.producedHoursAgo * Math.max(0.5, maxTemp - 4) * perish).toFixed(1),
+          gasDropPct: +(Math.random() * 18 * perish).toFixed(1),
+        } });
+        return;
+      }
+      remaining = opts.durations[CYCLE_PHASES[idx]];
+      onEvent({ type: "phase", phase: CYCLE_PHASES[idx], duration: remaining });
+    }
+    onEvent({ type: "tick", phase: CYCLE_PHASES[idx], remaining, total: opts.durations[CYCLE_PHASES[idx]], totalRemaining: total - elapsed });
+  }, 250);
+  return {
+    cancel: () => { stopped = true; clearInterval(iv); timers.forEach(clearTimeout); },
+    openDoor: () => { if (stopped) return; stopped = true; clearInterval(iv); onEvent({ type: "door_open" }); },
+  };
 }
 
 /* ---------------- Telemetry simulator ---------------- */
