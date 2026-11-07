@@ -89,7 +89,7 @@ const SENSORS = [
 ];
 
 function HowItWorks() {
-  const [sel, setSel] = useState(SENSORS[0]);
+  const [sel, setSel] = useState(SENSORS[0]!);
   return (
     <section className="mx-auto max-w-6xl px-4 py-24">
       <SectionHead k="01 — Comment ça marche" title="Une boîte qui pèse, sent et se souvient." sub="Cliquez sur chaque capteur. Nous disons aussi ce qu'il ne sait pas faire." />

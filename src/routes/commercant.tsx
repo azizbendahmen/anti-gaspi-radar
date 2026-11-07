@@ -97,7 +97,7 @@ function Merchant() {
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: string; tone?: string }) {
+function Stat({ label, value, tone }: { label: string; value: string; tone?: string | undefined }) {
   return (
     <div className="panel p-4">
       <p className="text-xs text-muted-foreground">{label}</p>

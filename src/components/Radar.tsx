@@ -8,7 +8,7 @@ interface Props {
   lots?: PricedLot[];
   size?: number | string;
   onSelect?: (id: string) => void;
-  selected?: string;
+  selected?: string | undefined;
   className?: string;
   showLabels?: boolean;
 }
