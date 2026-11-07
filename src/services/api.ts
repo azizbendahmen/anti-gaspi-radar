@@ -19,7 +19,7 @@ export interface Lot {
   id: string; merchant: string; address: string; category: Category; contents: string;
   weight_g: number; basePrice: number; closesAt: number;
   degreeHours: number; gasDropPct: number;
-  reservedUntil?: number; reservedBy?: string; pickedUp?: boolean;
+  reservedUntil?: number | undefined; reservedBy?: string | undefined; pickedUp?: boolean;
   angle: number;
   priceOverride?: number;
 }
@@ -126,8 +126,8 @@ export function startMeasurementCycle(
   const total = CYCLE_PHASES.reduce((s, p) => s + opts.durations[p], 0);
   if (opts.simulateOffline) { timers.push(setTimeout(() => !stopped && onEvent({ type: "offline" }), 1200)); return { cancel: () => { stopped = true; timers.forEach(clearTimeout); }, openDoor: () => {} }; }
 
-  let idx = 0, remaining = opts.durations[CYCLE_PHASES[0]], elapsed = 0;
-  onEvent({ type: "phase", phase: CYCLE_PHASES[0], duration: remaining });
+  let idx = 0, remaining = opts.durations[CYCLE_PHASES[0]!], elapsed = 0;
+  onEvent({ type: "phase", phase: CYCLE_PHASES[0]!, duration: remaining });
   const iv = setInterval(() => {
     if (stopped) return;
     remaining -= 0.25; elapsed += 0.25;
@@ -145,10 +145,10 @@ export function startMeasurementCycle(
         } });
         return;
       }
-      remaining = opts.durations[CYCLE_PHASES[idx]];
-      onEvent({ type: "phase", phase: CYCLE_PHASES[idx], duration: remaining });
+      remaining = opts.durations[CYCLE_PHASES[idx]!];
+      onEvent({ type: "phase", phase: CYCLE_PHASES[idx]!, duration: remaining });
     }
-    onEvent({ type: "tick", phase: CYCLE_PHASES[idx], remaining, total: opts.durations[CYCLE_PHASES[idx]], totalRemaining: total - elapsed });
+    onEvent({ type: "tick", phase: CYCLE_PHASES[idx]!, remaining, total: opts.durations[CYCLE_PHASES[idx]!], totalRemaining: total - elapsed });
   }, 250);
   return {
     cancel: () => { stopped = true; clearInterval(iv); timers.forEach(clearTimeout); },

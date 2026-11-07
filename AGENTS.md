@@ -28,3 +28,7 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- All data access (lots, telemetry, measurement cycle) goes through `src/services/api.ts`; it is a simulator today and will be swapped for FastAPI/MQTT/ESP32 without UI changes.
+- Pricing/freshness math lives in `src/lib/pricing.ts` (pure, tested) so UI and future backend share one formula.

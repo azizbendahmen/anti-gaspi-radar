@@ -52,12 +52,11 @@ export function BoxScene({ w }: { w: Workshop }) {
           )}
         </AnimatePresence>
         {/* door: hinges on the left, scales on X */}
-        <motion.g style={{ originX: "90px" }} animate={{ scaleX: doorClosed ? 1 : 0.06 }}
-          transition={doorClosed ? { type: "spring", stiffness: 260, damping: 14 } : { duration: 0.6, ease: "easeOut" }}>
+        <g style={{ transformBox: "view-box", transformOrigin: "90px 125px", transform: `scaleX(${doorClosed ? 1 : 0.06})`, transition: doorClosed ? "transform .7s cubic-bezier(.34,1.56,.64,1)" : "transform .6s ease-out" }}>
           <rect x="90" y="40" width="220" height="170" rx="8" fill="var(--surface)" stroke="var(--radar)" strokeOpacity=".5" />
           <rect x="285" y="110" width="6" height="30" rx="3" fill="var(--muted-foreground)" />
           <text x="200" y="130" textAnchor="middle" fontSize="12" fill="var(--muted-foreground)" fontFamily="var(--font-mono)">FWR-01</text>
-        </motion.g>
+        </g>
         {/* LED */}
         <motion.circle cx="200" cy="30" r="5" fill={led} animate={measuring || state === "DOOR_CLOSING" ? { opacity: [1, 0.25, 1] } : { opacity: 1 }} transition={{ repeat: measuring ? Infinity : 0, duration: 0.9 }} />
         <circle cx="200" cy="30" r="10" fill={led} fillOpacity=".2" />

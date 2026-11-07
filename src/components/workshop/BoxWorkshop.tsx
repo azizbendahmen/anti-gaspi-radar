@@ -121,7 +121,7 @@ function IdCard({ w }: { w: Workshop }) {
   );
 }
 
-const PHASE_INFO: Record<string, { label: string; icon: (active: boolean) => JSX.Element }> = {
+const PHASE_INFO: Record<string, { label: string; icon: (active: boolean) => React.ReactElement }> = {
   STABILIZING: { label: "Stabilisation", icon: () => <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg> },
   WEIGHING: { label: "Pesée", icon: () => <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v18M5 7h14M5 7l-3 7h6zM19 7l-3 7h6zM8 21h8" /></svg> },
   PURGING: { label: "Purge de l'air", icon: (a) => <motion.svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" animate={a ? { rotate: 360 } : {}} transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}><circle cx="12" cy="12" r="2" />{[0, 120, 240].map((r) => <ellipse key={r} cx="12" cy="6" rx="2.5" ry="5" transform={`rotate(${r} 12 12)`} />)}</motion.svg> },
@@ -142,9 +142,9 @@ function Analysis({ w }: { w: Workshop }) {
             <li key={p} className={`flex flex-1 flex-col items-center gap-1 text-center ${active ? "text-radar" : done ? "text-foreground" : "text-muted-foreground/50"}`}>
               <motion.span animate={active ? { scale: [1, 1.12, 1] } : { scale: 1 }} transition={{ repeat: active ? Infinity : 0, duration: 1.4 }}
                 className={`grid h-11 w-11 place-items-center rounded-full border ${active ? "border-radar bg-radar/10" : done ? "border-radar/40" : "border-border"}`}>
-                {done ? <svg viewBox="0 0 24 24" className="h-5 w-5 text-radar" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12l5 5 9-10" /></svg> : PHASE_INFO[p].icon(active)}
+                {done ? <svg viewBox="0 0 24 24" className="h-5 w-5 text-radar" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12l5 5 9-10" /></svg> : PHASE_INFO[p]!.icon(active)}
               </motion.span>
-              <span className="hidden text-[11px] leading-tight sm:block">{PHASE_INFO[p].label}</span>
+              <span className="hidden text-[11px] leading-tight sm:block">{PHASE_INFO[p]!.label}</span>
             </li>
           );
         })}
@@ -156,7 +156,7 @@ function Analysis({ w }: { w: Workshop }) {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="font-mono text-3xl tabular-nums">{w.state === "DOOR_CLOSING" ? "··" : `${Math.ceil(w.progress.remaining)}s`}</span>
-          <span className="text-xs text-muted-foreground">{activeIdx >= 0 ? PHASE_INFO[w.state].label : "Fermeture"}</span>
+          <span className="text-xs text-muted-foreground">{activeIdx >= 0 ? PHASE_INFO[w.state]!.label : "Fermeture"}</span>
           {activeIdx >= 0 && <span className="font-mono text-[10px] text-muted-foreground">total {Math.ceil(w.progress.totalRemaining)} s</span>}
         </div>
       </div>
