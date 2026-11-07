@@ -47,7 +47,7 @@ export function verdict(score: number, blocked: boolean) {
 
 export function useBoxWorkshop() {
   const [state, setState] = useState<WorkshopState>("IDLE");
-  const [family, setFamily] = useState<Family>(FAMILIES[0]);
+  const [family, setFamily] = useState<Family>(FAMILIES[0]!);
   const [plate, setPlate] = useState<PlateItem[]>([]);
   const [demo, setDemo] = useState(true);
   const [simulateOffline, setSimulateOffline] = useState(false);
@@ -57,8 +57,8 @@ export function useBoxWorkshop() {
   const [publishedId, setPublishedId] = useState<string>();
   const [producedAt] = useState(() => new Date(Date.now() - 3 * 3600_000));
   const [closesAt] = useState(() => { const d = new Date(); d.setHours(20, 0, 0, 0); if (d.getTime() < Date.now()) d.setTime(Date.now() + 3 * 3600_000); return d; });
-  const cycle = useRef<ReturnType<typeof startMeasurementCycle>>();
-  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const cycle = useRef<ReturnType<typeof startMeasurementCycle> | undefined>(undefined);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => { cycle.current?.cancel(); clearTimeout(timer.current); }, []);
 
   const estimatedWeight = plate.reduce((s, p) => s + p.def.grams, 0);
@@ -102,7 +102,7 @@ export function useBoxWorkshop() {
     const id = createLot({
       category: family.category, weight_g: result.weight_g, basePrice, closesAt: closesAt.getTime(),
       contents: Object.values(counts).map((c) => `${c.n} ${c.def.name.toLowerCase()}`).join(", "),
-      degreeHours: result.degreeHours, gasDropPct: result.gasDropPct, priceOverride,
+      degreeHours: result.degreeHours, gasDropPct: result.gasDropPct, ...(priceOverride !== undefined ? { priceOverride } : {}),
     });
     setPublishedId(id); setState("PUBLISHED");
   };
