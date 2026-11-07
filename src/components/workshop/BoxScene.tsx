@@ -52,7 +52,7 @@ export function BoxScene({ w }: { w: Workshop }) {
           )}
         </AnimatePresence>
         {/* door: hinges on the left, scales on X */}
-        <motion.g style={{ originX: "90px" }} animate={{ scaleX: doorClosed ? 1 : 0.06 }}
+        <motion.g style={{ transformBox: "fill-box", originX: 0 }} animate={{ scaleX: doorClosed ? 1 : 0.06 }}
           transition={doorClosed ? { type: "spring", stiffness: 260, damping: 14 } : { duration: 0.6, ease: "easeOut" }}>
           <rect x="90" y="40" width="220" height="170" rx="8" fill="var(--surface)" stroke="var(--radar)" strokeOpacity=".5" />
           <rect x="285" y="110" width="6" height="30" rx="3" fill="var(--muted-foreground)" />
