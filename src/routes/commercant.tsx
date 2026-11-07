@@ -5,6 +5,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 import { getTelemetry, getLots, createLot, validatePickup, CATEGORIES, type Category, type Phase } from "@/services/api";
 import { useLive, useHydrated } from "@/hooks/use-api";
 import { RadarLoader } from "@/components/Radar";
+import { BoxWorkshop } from "@/components/workshop/BoxWorkshop";
 import { DEGREE_HOURS_LIMIT, tnd } from "@/lib/pricing";
 
 export const Route = createFileRoute("/commercant")({
@@ -56,6 +57,8 @@ function Merchant() {
         <Stat label="Gaz BME680" value={`${c.gas_bme.toFixed(0)} kΩ`} />
       </div>
 
+      <BoxWorkshop />
+
       <PhaseTimeline phase={c.phase} />
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -87,8 +90,7 @@ function Merchant() {
         </div>
       </section>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <NewLot weight={c.weight_g} />
+      <div className="grid gap-4">
         <Scanner />
       </div>
     </main>

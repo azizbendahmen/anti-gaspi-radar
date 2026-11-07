@@ -121,7 +121,7 @@ function IdCard({ w }: { w: Workshop }) {
   );
 }
 
-const PHASE_INFO: Record<string, { label: string; icon: (active: boolean) => JSX.Element }> = {
+const PHASE_INFO: Record<string, { label: string; icon: (active: boolean) => React.ReactElement }> = {
   STABILIZING: { label: "Stabilisation", icon: () => <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg> },
   WEIGHING: { label: "Pesée", icon: () => <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v18M5 7h14M5 7l-3 7h6zM19 7l-3 7h6zM8 21h8" /></svg> },
   PURGING: { label: "Purge de l'air", icon: (a) => <motion.svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" animate={a ? { rotate: 360 } : {}} transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}><circle cx="12" cy="12" r="2" />{[0, 120, 240].map((r) => <ellipse key={r} cx="12" cy="6" rx="2.5" ry="5" transform={`rotate(${r} 12 12)`} />)}</motion.svg> },
